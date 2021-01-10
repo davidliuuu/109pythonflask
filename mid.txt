@@ -1,0 +1,326 @@
+FLASK 筆記
+
+建虛擬環境
+
+python -m venv venv
+source venv/bin/activate
+
+退出
+
+deactivate
+
+
+export FLASK_APP=hello.py
+flask run --host nkust.ipv6.club.tw --port 10640
+
+
+
+
+git reset --hard 
+
+git init
+git status 看狀態
+git add 檔案 列追蹤
+git commit -m '名稱'
+git coonfig 
+git log --oneline
+
+.gitignore .*
+
+git remote add origin gitlab:HW09/Group07.git
+git push origin master
+git pull origin master
+git clone gitlab:hw09/group07.git
+git remote -v (看網址)
+
+
+*BMI TEMPLATE
+----------------------------------------------------------------------*
+from flask import Flask,render_template
+app = Flask(__name__)
+
+@app.route('/')
+def index():
+    return '<h1>bmi!</h1>'
+
+@app.route('/bmi/<height>/<weight>')
+def bmi(height,weight):
+    he = float(height)
+    we = float(weight)
+    if he>100 :
+        he = he/100
+
+        height=height+'cm'
+    else:
+        he = he
+        height=height+'m'
+    weight=weight+'kg'
+    bmi = float(we/(he**2))
+    bmi = round(bmi,2)
+    bmi = str(bmi)
+    return render_template('bmi.html',height=height,weight=weight,bmi=bmi)
+
+----------------------------------------------------------------------------
+
+html
+
+<h1>height {{ height }},you weight {{ weight }},you bmi {{ bmi }} </h1>
+
+-----------------------------------------------------------------------------*
+
+1.大學共有幾所 (152)
+SELECT COUNT(DISTINCT 學校名稱) FROM student;
+
+2.本資料檔所統計，全臺灣的大專院校共有多少學生(含研究所及在職專班) (1,213,172)
+SELECT SUM(總計) FROM student;
+
+3.算出各大學學生總數。
+SELECT 學校名稱,SUM(總計) AS Total FROM student GROUP BY 學校名稱 ;
+
+4.算出各大學學生總數，印出人數最多的十所。
+SELECT 學校名稱,SUM(總計) AS Total FROM student GROUP BY 學校名稱 ORDER BY Total DESC LIMIT 10;
+
+5.算出各大學學生總數，印出人數最少的十所。
+SELECT 學校名稱,SUM(總計) AS Total FROM student GROUP BY 學校名稱 ORDER BY Total ASC LIMIT 10;
+
+6.列出男女生比例最低的二十所
+SELECT 學校名稱,SUM(男生計),SUM(女生計),SUM(男生計)*1.0/SUM(女生計) AS Total FROM student GROUP BY 學校名稱 ORDER BY Total ASC LIMIT 20;
+
+7.列出男女生比例最高的二十所
+SELECT 學校名稱,SUM(男生計),SUM(女生計),SUM(男生計)*1.0/SUM(女生計) AS Total FROM student GROUP BY 學校名稱 ORDER BY Total DESC LIMIT 20;
+
+8.各縣市各有幾所大學, 請由小排到大。(加起來應該是152)
+SELECT 縣市名稱,COUNT(DISTINCT 學校名稱) AS Total FROM student GROUP BY 縣市名稱 ORDER BY Total ASC ;
+16 澎湖縣|1
+71 金門縣|1
+04 新竹縣|2
+08 南投縣|2
+14 臺東縣|2
+20 嘉義市|2
+05 苗栗縣|3
+09 雲林縣|3
+17 基隆市|3
+02 宜蘭縣|4
+21 臺南市|4
+07 彰化縣|5
+10 嘉義縣|5
+13 屏東縣|5
+15 花蓮縣|5
+18 新竹市|5
+06 臺中市|6
+11 臺南市|10
+19 臺中市|11
+03 桃園市|12
+50 高雄市|16
+01 新北市|20
+30 臺北市|25
+
+
+--------------------------------------------------------------------------------
+
+sqlite3 test.db
+
+.import l.csv l
+
+.tables
+
+SELECT * FROM L;
+
+CREATE TABLE students(
+	name TEXT NOT NULL,
+        height Integer,
+	weight integer,
+);
+
+.schema table ; 
+-----------------------------------------------------------------------------------------
+
+更改TABLE內屬性
+
+*Export Table Contents
+
+.mode csv
+.header off
+.once custoomer.csv
+SELECT * FROM customers;
+
+*Empty the table
+
+DELETE FROM customers;
+
+*Schema to a text file
+
+.once customers.sql
+.schema customers
+
+*modify the schema
+
+.system vi customers.sql
+
+*Re-create the table
+
+DROP TABLE Customers
+.read customers.sql
+.import customers.csv
+
+----------------------------------------------------------------------------------------------
+
+from flask import Flask,request
+from flask import render_template
+from flask_wtf import FlaskForm
+from wtforms import StringField,SelectField,SubmitField
+from wtforms.validators import DataRequired
+
+app = Flask(__name__)
+app.config['SECRET_KEY']='hard to guess string'
+year1 =[i for i in range(1980,2021)]
+date =[i for i in range(1,32)]
+class UserForm(FlaskForm):
+    Year=SelectField('Year',choices=year1)
+    Month=SelectField('mouth',choices=[('Jan'),('Feb'),('Mar'),('Apr'),('May'),(
+'Jun'),('Jul'),('Aug'),('Sep'),('Oct'),('Nov'),('Dec')])
+    Day=SelectField('Day',choices=date)
+    submit=SubmitField('Submit')
+
+@app.route('/',methods=['GET','POST'])
+def index():
+    form=UserForm()
+    return render_template('hw11.html',form=form)
+
+
+----------------------------------------------------------------------------------------------|
+
+
+{% macro quick_form(form) %}
+<form method="POST">
+    <TABLE>
+    {% for item in form %}
+        {% if item.type == 'CSRFTokenField' %}
+            {{ item() }}
+        {% elif item.type == 'SubmitField' %}
+            <TR><TD><TD> {{ form.submit() }}
+        {% else %}
+            <TR> <TD> {{ item.label }} <TD> {{ item() }} </TR>
+        {% endif %}
+    {% endfor %}
+    </TABLE>
+</form>
+{% endmacro %}
+
+----------------------------------------------------------------------------------------------|
+<form method="POST">
+   {{form.hidden_tag()}}
+   {{form.Year.label}}{{form.Year()}}
+   {{form.Month.label}}{{form.Month()}}
+   {{form.Day.label}}{{form.Day()}}
+   {{form.Submit()}}
+</form>
+
+
+-----------
+{% import "macro.html" as macro %}
+{{macro.quick_form(form)}}
+
+-------------------------------------------------------------------------------------------------|
+------hw05 templates
+
+from flask import Flask,render_template
+app = Flask(__name__)
+
+@app.route('/')
+def index():
+    return '<h1>99!</h1>'
+
+@app.route('/nine/<int:n>')
+def nine(n):
+    return render_template('hw05.html', range=range(1, n+1))
+
+app.run()
+
+
+-----------------------------
+
+
+{% macro multiply(i,j)%}
+{%if (i+j)%2==0%}
+ <TD bgcolor="yellow">{{i}}*{{j}}={{i*j}}</TD>
+{%else%}
+ <TD bgcolor="red">{{i}}*{{j}}={{i*j}}</TD>
+{%endif%}
+{%endmacro%}
+
+<TABLE BORDER=1>
+{%for i in range%}
+<TR>
+{%for j in range%}
+ {{multiply(i,j)}}
+{%endfor%}
+</TR>
+{%endfor%}
+</TABLE>
+-------------------------------------------------
+
+---hw06 redirect
+
+from flask import Flask,render_template,redirect,url_for,request
+import datetime
+app = Flask(__name__)
+
+def nowtime():
+    x = datetime.datetime.now() 
+    y= "{"+str(x.year)+"/"+str(x.month)+"/"+str(x.day)+" "+str(x.hour)+":"+str(x.minute)+":"+str(x.second)+"}"
+    return y
+
+
+
+@app.route('/')
+def index():
+    return render_template('hw06.html')
+
+@app.route('/main/<int:n>')
+def main(n):
+    if n==1:
+        ip = request.remote_addr
+        time=nowtime()
+        iptime=ip+" "+time+" "+"https://www.youtube.com/"
+        print(iptime)
+        return redirect('https://www.youtube.com/')
+    elif n==2:
+        ip = request.remote_addr
+        time=nowtime()
+        iptime=ip+" "+time+" "+"https://www.nkust.edu.tw/"
+        print(iptime)
+        return redirect('https://www.nkust.edu.tw/')
+
+
+app.run()
+
+----
+
+<a href="http://127.0.0.1:5000/main/1">youtube</a><br>
+<a href="http://127.0.0.1:5000/main/2">nkust</a><br>
+
+---
+
+
+from flask import Flask,request
+app = Flask(__name__)
+
+@app.route('/')
+def index():
+   doc ='''<FORM METHOD=POST ACTION =bmi>
+身高<INPUT TYPE=TEXT NAME=a>公分(cm)<br>
+體重<INPUT TYPE=TEXT NAME=b>公斤(kg)<br>
+<INPUT TYPE=SUBMIT>'''
+   return doc
+
+@app.route('/bmi',methods=['GET','POST'])
+def bmi():
+   a=float(request.form['a'])
+   a=a/100
+   b=float(request.form['b'])
+   bmi = float(b/(a**2))
+   bmi = round(bmi,2)
+   bmi = str(bmi)
+   doc ="you bmi = {}".format(bmi)
+   return doc
