@@ -1,0 +1,17 @@
+ {%macro multiply(i,j)%}
+{%if (i+j)%2==0%}
+ <TD bgcolor="yellow">{{i}}*{{j}}={{i*j}}</TD>
+{%else%}
+ <TD bgcolor="red">{{i}}*{{j}}={{i*j}}</TD>
+{%endif%}
+{%endmacro%}
+
+<TABLE BORDER=1>
+{%for i in range%}
+<TR>
+{%for j in range%}
+ {{multiply(i,j)}}
+{%endfor%}
+</TR>
+{%endfor%}
+</TABLE>
